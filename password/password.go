@@ -9,18 +9,18 @@ import (
 
 // Characters
 var (
-	vocales     = "aeiouáéíóú"
-	consonantes = "bcdfghjklmnñpkrstvwxyz"
+	vocales     = "aeiou"
+	consonantes = "bcdfghjklmnpkrstvwxyz"
 	simbolos    = "!?*+-_^ "
+	utf8        = "áéíóúñ"
 	numeros     = "0123456789"
 )
 
 // Password is a struct that define properties of password that will be generated
 type Password struct {
 	vocabulary    string
-	Long          int
+	Long          uint
 	CanRepeatChar bool
-	conf          string
 	confSetted    bool
 }
 
@@ -39,10 +39,10 @@ func (p *Password) SetConf(options string) error {
 
 // ValidateConf validate if configuration is okay
 func validateConf(conf *string) bool {
-	match, error := regexp.MatchString("@.+|[avVcCns]+", *conf)
+	match, err := regexp.MatchString("@.+|[avVcCuUns]+", *conf)
 
-	if error != nil {
-		fmt.Println("Ha ocurrido un error, ", error)
+	if err != nil {
+		fmt.Println("Ha ocurrido un error, ", err)
 	}
 
 	if !match {
@@ -62,7 +62,7 @@ func parseConf(conf *string) string {
 		case '@':
 			return string([]rune(*conf)[1:])
 		case 'a':
-			return (vocales + strings.ToUpper(vocales) + consonantes + strings.ToUpper(consonantes) + simbolos + numeros)
+			return (vocales + strings.ToUpper(vocales) + consonantes + strings.ToUpper(consonantes) + simbolos + utf8 + numeros + strings.ToUpper(utf8))
 		case 'v':
 			vocabulary += vocales
 		case 'V':
@@ -73,6 +73,10 @@ func parseConf(conf *string) string {
 			vocabulary += strings.ToUpper(consonantes)
 		case 'n':
 			vocabulary += numeros
+		case 'u':
+			vocabulary += utf8
+		case 'U':
+			vocabulary += strings.ToUpper(utf8)
 		case 's':
 			vocabulary += simbolos
 		}

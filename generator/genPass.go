@@ -17,7 +17,7 @@ func GenPass(p *password.Password) (string, error) {
 	vocabulary := []rune(p.GetVocabulary())
 
 	if p.Long == 0 {
-		p.Long = len(vocabulary)
+		p.Long = uint(len(vocabulary))
 	}
 
 	zero := 0
@@ -26,7 +26,7 @@ func GenPass(p *password.Password) (string, error) {
 	rand.Seed(time.Now().Unix())
 	isLimitReached := false
 
-	for i := 0; i < p.Long; i++ {
+	for i := uint(0); i < p.Long; i++ {
 
 		if isLimitReached {
 			return password, errors.New("Límite alcanzado")
