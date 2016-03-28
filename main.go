@@ -11,19 +11,10 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Este programa necesita parámetros")
-		return
-	}
+		fmt.Println(help())
 
-	var (
-		app         = "goPassword"
-		salto       = "\t\t"
-		nextLine    = "\n" + salto
-		hVocabulary = "--vocabulary, -V string\t->\tVocabulario para la pass"
-		hVerbose    = "--verbose, -v bool\t->\tModo verbose"
-		hRepeat     = "--repeat, -r bool\t->\tRepetir caracteres"
-		hLong       = "--long, -l uint\t\t->\tLongitud de la pass"
-	)
+		os.Exit(2)
+	}
 
 	var (
 		vocabulary = "a"
@@ -35,7 +26,7 @@ func main() {
 	for i := 1; i < len(os.Args); i++ {
 		switch os.Args[i] {
 		case "-h", "--help":
-			fmt.Fprintln(os.Stdout, "Uso de "+app+":"+nextLine+hVocabulary+nextLine+hVerbose+nextLine+hRepeat+nextLine+hLong)
+			fmt.Println(help())
 
 			return
 		case "--long", "-l":
@@ -43,7 +34,7 @@ func main() {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "¡Valor incorrecto en la longitud de la password!,", os.Args[i+1])
 
-				return
+				os.Exit(1)
 			}
 
 			long = uint(longitud)
@@ -71,27 +62,41 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error al generar la password:", err)
 
-		return
+		os.Exit(1)
 	}
 
 	if verbose {
 		fmt.Println("Lista de parámetros: ")
 		for i, arg := range os.Args {
-			fmt.Fprintln(os.Stdout, i, "arg ->", arg)
+			fmt.Println(i, "arg ->", arg)
 		}
 
-		fmt.Fprintln(os.Stdout, "El vocabulario será:", p.GetVocabulary())
+		fmt.Println("El vocabulario será:", p.GetVocabulary())
 
+		fmt.Print("Los caracteres ")
 		if repeat {
-			fmt.Fprintln(os.Stdout, "Los caracteres pueden repetirse")
-		} else {
-			fmt.Fprintln(os.Stdout, "Los caracteres no pueden repetirse")
+			fmt.Print("no ")
 		}
+		fmt.Println("pueden repetirse")
 
 		fmt.Println("Número de caracteres:", long)
 
-		fmt.Fprint(os.Stdout, "La pass generada es: ")
+		fmt.Print("La pass generada es: ")
 	}
 
-	fmt.Fprintln(os.Stdout, pass)
+	fmt.Println(pass)
+}
+
+func help() string {
+	var (
+		app         = "goPassword"
+		salto       = "\t\t"
+		nextLine    = "\n" + salto
+		hVocabulary = "--vocabulary, -V string\t->\tVocabulario para la pass"
+		hVerbose    = "--verbose, -v bool\t->\tModo verbose"
+		hRepeat     = "--repeat, -r bool\t->\tRepetir caracteres"
+		hLong       = "--long, -l uint\t\t->\tLongitud de la pass"
+	)
+
+	return "Uso de " + app + ":" + nextLine + hVocabulary + nextLine + hVerbose + nextLine + hRepeat + nextLine + hLong
 }
