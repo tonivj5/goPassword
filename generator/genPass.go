@@ -1,12 +1,52 @@
 package generator
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"io"
 	"math/rand"
 	"time"
 
 	"github.com/xxxtonixxx/goPassword/password"
 )
+
+// GenPassToWriter generate a password to writer
+func GenPassToWriter(w io.Writer, p *password.Password) error {
+	if !p.IsConfigSetted() {
+		return errors.New("Configuración sin settear")
+	}
+
+	vocabulary := []rune(p.GetVocabulary())
+
+	if p.Long == 0 {
+		p.Long = uint(len(vocabulary))
+	}
+
+	zero := 0
+
+	rand.Seed(time.Now().Unix())
+	isLimitReached := false
+
+	for i := uint(0); i < p.Long; i++ {
+
+		if isLimitReached {
+			return errors.New("Límite alcanzado")
+		}
+
+		long := len(vocabulary)
+
+		r := random(zero, long)
+		character := vocabulary[r]
+		fmt.Fprint(w, string(character))
+
+		if !p.CanRepeatChar {
+			isLimitReached = deleteRune(&vocabulary, &character)
+		}
+	}
+
+	return nil
+}
 
 // GenPass generate a password
 func GenPass(p *password.Password) (string, error) {
@@ -21,7 +61,7 @@ func GenPass(p *password.Password) (string, error) {
 	}
 
 	zero := 0
-	password := ""
+	var password bytes.Buffer
 
 	rand.Seed(time.Now().Unix())
 	isLimitReached := false
@@ -29,30 +69,28 @@ func GenPass(p *password.Password) (string, error) {
 	for i := uint(0); i < p.Long; i++ {
 
 		if isLimitReached {
-			return password, errors.New("Límite alcanzado")
+			return password.String(), errors.New("Límite alcanzado")
 		}
 
 		long := len(vocabulary)
 
-		r := random(&zero, &long)
-		character := string(vocabulary[r])
-		password += character
+		r := random(zero, long)
+		character := vocabulary[r]
+		password.WriteRune(character)
+
 		if !p.CanRepeatChar {
 			isLimitReached = deleteRune(&vocabulary, &character)
 		}
 	}
 
-	return password, nil
+	return password.String(), nil
 }
 
-func deleteRune(vocabulary *[]rune, character *string) bool {
+func deleteRune(vocabulary *[]rune, character *rune) bool {
 	pos := getPos(vocabulary, character)
 	long := len(*vocabulary)
-	// FIXME: delete this line fmt.Println(pos, long)
 
 	if long == 1 {
-		(*vocabulary)[0] = 0
-
 		return true
 	}
 
@@ -63,9 +101,9 @@ func deleteRune(vocabulary *[]rune, character *string) bool {
 	return false
 }
 
-func getPos(vocabulary *[]rune, character *string) int {
+func getPos(vocabulary *[]rune, character *rune) int {
 	for i, char := range *vocabulary {
-		if *character == string(char) {
+		if *character == char {
 			return i
 		}
 	}
@@ -73,6 +111,6 @@ func getPos(vocabulary *[]rune, character *string) int {
 	return -1
 }
 
-func random(min, max *int) int {
-	return rand.Intn(*max-*min) + *min
+func random(min, max int) int {
+	return rand.Intn(max-min) + min
 }

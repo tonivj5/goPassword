@@ -1,6 +1,7 @@
 package password
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"regexp"
@@ -55,34 +56,43 @@ func validateConf(conf *string) bool {
 }
 
 func parseConf(conf *string) string {
-	vocabulary := ""
+	var vocabulary bytes.Buffer
 
 	for _, char := range *conf {
 		switch char {
 		case '@':
-			return string([]rune(*conf)[1:])
+			return (*conf)[1:]
 		case 'a':
-			return (vocales + strings.ToUpper(vocales) + consonantes + strings.ToUpper(consonantes) + simbolos + utf8 + numeros + strings.ToUpper(utf8))
+			vocabulary.WriteString(vocales)
+			vocabulary.WriteString(strings.ToUpper(vocales))
+			vocabulary.WriteString(consonantes)
+			vocabulary.WriteString(strings.ToUpper(consonantes))
+			vocabulary.WriteString(simbolos)
+			vocabulary.WriteString(utf8)
+			vocabulary.WriteString(numeros)
+			vocabulary.WriteString(strings.ToUpper(utf8))
+
+			return vocabulary.String()
 		case 'v':
-			vocabulary += vocales
+			vocabulary.WriteString(vocales)
 		case 'V':
-			vocabulary += strings.ToUpper(vocales)
+			vocabulary.WriteString(strings.ToUpper(vocales))
 		case 'c':
-			vocabulary += consonantes
+			vocabulary.WriteString(consonantes)
 		case 'C':
-			vocabulary += strings.ToUpper(consonantes)
+			vocabulary.WriteString(strings.ToUpper(consonantes))
 		case 'n':
-			vocabulary += numeros
+			vocabulary.WriteString(numeros)
 		case 'u':
-			vocabulary += utf8
+			vocabulary.WriteString(utf8)
 		case 'U':
-			vocabulary += strings.ToUpper(utf8)
+			vocabulary.WriteString(strings.ToUpper(utf8))
 		case 's':
-			vocabulary += simbolos
+			vocabulary.WriteString(simbolos)
 		}
 	}
 
-	return vocabulary
+	return vocabulary.String()
 }
 
 // IsConfigSetted return if conf has been setted
